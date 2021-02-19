@@ -9,6 +9,16 @@ cordapp {
     vendor 'Demo'
     versionId 1
   }
+  signing {
+    enabled true
+    options {
+      keystore jar_sign_keystore
+      alias jar_sign_alias
+      storepass jar_sign_password
+      keypass jar_sign_password
+      storetype 'PKCS12'
+    }
+  }
 }
 
 test {
