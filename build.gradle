@@ -54,7 +54,13 @@ apply plugin: 'net.corda.plugins.cordformation'
 //The root project shouldn't be creating a jar of its own
 jar.enabled = false
 
+configurations {
+  cordite
+}
+
 dependencies {
+  cordite 'io.cordite.services:network-map-service:0.5.2'
+
   cordaCompile "net.corda:corda-node-api:$corda_release_version"
 
   // CorDapp dependencies.
@@ -114,6 +120,20 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
       address("localhost:10008")
       adminAddress("localhost:10009")
     }
+  }
+}
+
+task copyNMS(type: Copy) {
+  description 'Copy the cordite NMS jar to the build directory'
+
+  from configurations.cordite
+  into "$buildDir/nms"
+  //Cordite NMS is a fat jar in maven so we don't need the dependencies
+  include 'network-map-service*.jar'
+  rename { name ->
+    def artifacts = configurations.cordite.resolvedConfiguration.resolvedArtifacts
+    def artifact = artifacts.find { it.file.name == name }
+    "${artifact.name}.${artifact.extension}"
   }
 }
 
