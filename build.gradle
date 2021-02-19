@@ -116,3 +116,23 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
     }
   }
 }
+
+//If you add/remove nodes in the deployNodes task you need to
+//manually update them here as well
+task deployNetwork(dependsOn: ['deployNodes']) {
+  description 'Create a copy of the local network removing the network bootstrapper files.'
+
+  doLast {
+    delete "$buildDir/network"
+    mkdir "$buildDir/network"
+    ['Agents', 'Banks', 'Notary'].each { node ->
+      copy {
+        from "$buildDir/nodes/$node"
+        into "$buildDir/network/$node"
+        include 'corda.jar'
+        include 'node.conf'
+        include 'cordapps/**'
+      }
+    }
+  }
+}
