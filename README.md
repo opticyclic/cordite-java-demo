@@ -13,6 +13,58 @@ This is published as a [docker container](https://hub.docker.com/r/cordite/netwo
 
 See also the [Cordite FAQ](https://gitlab.com/cordite/network-map-service/-/blob/master/FAQ.md#1-show-me-how-to-set-up-a-simple-network) for further details on setting up a network (both with Docker and Java).
 
+## Running Locally
+
+The following steps will create a local network and connect it up to a local instance of cordite.
+
+### Build The Project
+
+    ./gradlew deployNetwork
+    ./gradlew copyNMS
+
+See below for info about these extra tasks.
+
+### Run Cordite
+
+If you don't have certificates set up then the NMS will use built-in dev keys instead.
+
+> TODO: How many different keys do we need and where do they go?
+>
+> TODO: What are the types of keys and how do we generate them?
+
+    cd build/nms
+    java -jar network-map-service.jar
+
+### Run The Nodes
+
+The following steps are required to start the network:
+
+* Download the truststore from the NMS to each node
+* Register all nodes with the NMS
+* Start the notary node
+* Designate the notary with the NMS
+* Stop the notary node
+* Delete the network-parameters file on the notary node
+* Start the notary node
+* Start the other nodes
+
+Get the Network Root Truststore from the NMS and put it in the node directory
+    
+    cd build/Notary
+    mkdir certificates
+    cd certificates
+    curl -o "network-root-truststore.jks" "http://localhost:8080//network-map/truststore" 
+
+Register the node with the NMS
+
+    cd build/Notary
+    java -jar corda.jar initial-registration -p="trustpass"
+
+Start the nodes
+
+    cd build/network/Notary
+    java -jar corda.jar
+
 ## Build Tasks
 
 There are two extra build tasks added - `deployNetwork` and `copyNMS`.
