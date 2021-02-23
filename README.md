@@ -100,10 +100,11 @@ This will start cordite in the following way:
     cd build/nms
     java -jar -Dstorage-type=file -Ddb=storage -Droot-ca-name="CN=Custom Cordite NMS, OU=Operations, O=Demo Company, L=Dallas, ST=Texas, C=US" -Dcache-timeout=30S network-map-service.jar
 
-### Run The Nodes
+## Run The Nodes
 
 The following steps are required to start the network:
 
+* Update the `node.conf`
 * Download the truststore from the NMS to each node
 * Register all nodes with the NMS
 * Start the notary node
@@ -113,22 +114,76 @@ The following steps are required to start the network:
 * Start the notary node
 * Start the other nodes
 
-Get the Network Root Truststore from the NMS and put it in the node directory
-    
-    cd build/Notary
-    mkdir certificates
-    cd certificates
-    curl -o "network-root-truststore.jks" "http://localhost:8080//network-map/truststore" 
+### Update Configuration
 
-Register the node with the NMS
+If you were deploying properly, you would probably use a template for the `node.conf` instead of modifying the generated one as we are doing here.
 
-    cd build/Notary
-    java -jar corda.jar initial-registration -p="trustpass"
+In order for a node to connect it needs to have compatibility zone specified in the node conf.
+Since we are using `deployNodes` to generate our structure we can't specify it in the `build.gradle` and have it generated in the node.conf as the initial network bootstrap called by `deployNodes` starts the node, which will fail if the `compatibilityZoneURL` is set because the node will be looking for the NMS keys.
 
-Start the nodes
+[compatibilityZoneURL](https://docs.corda.net/docs/corda-os/4.7/corda-configuration-fields.html#compatibilityzoneurl)
 
-    cd build/network/Notary
+> The root address of the Corda compatibility zone network management services  
+> It is used by the Corda node to register with the network and obtain a Corda node certificate  
+> It is also used by the node to obtain network map information.
+
+We are also setting `devMode` to `false` to better simulate a proper environment and remove any extra helpers that the property provides.
+
+    pushd build/network
+    for N in */; do
+        sed -i 's/true/false/' $N/node.conf
+        echo 'compatibilityZoneURL="http://localhost:8080"' >> $N/node.conf
+    done
+    popd
+
+**Side Note:** You should also add the `emailAddress` property to the node.conf as it defaults to `"admin@company.com"`.
+
+### Register The Nodes With The NMS
+
+This downloads the truststore from the NMS to the `certificates` directory in each node then registers the node with the NMS.
+
+    pushd build/network
+    for N in */; do
+        pushd $N
+        mkdir certificates
+        pushd certificates
+        curl -o "network-root-truststore.jks" "http://localhost:8080/network-map/truststore" 
+        popd
+        java -jar corda.jar initial-registration --network-root-truststore-password=trustpass
+        popd
+    done
+    popd  
+
+### Register The Notary With The NMS
+
+Start the notary:
+
+    pushd build/network/Notary
     java -jar corda.jar
+
+After it has fully started, login to the NMS via the admin API and upload the notary node info to designate it.
+
+    TOKEN=$(curl -X POST "http://localhost:8080/admin/api/login" -H  "accept: text/plain" -H  "Content-Type: application/json" -d "{  \"user\": \"sa\",  \"password\": \"admin\"}")
+    NODEINFO=$(ls nodeInfo*)
+    curl -X POST -H "Authorization: Bearer $TOKEN" -H "accept: text/plain" -H "Content-Type: application/octet-stream" --data-binary @$NODEINFO http://localhost:8080/admin/api/notaries/nonValidating
+    popd
+
+
+FYI: The `@$NODEINFO` is a bit confusing at first glance. It isn't the `$@` shell expansion meaning all parameters! `$NODEINFO` is the bash variable for the filename. `@` at the start is the curl syntax to specify a file that is uploaded as is.
+
+Registering a notary changes the network parameters and shuts down the node.
+Therefore, we need to remove the old `network-parameters` file before we can start it.
+
+    rm network-parameters
+    popd
+
+### Start The Network
+
+After all this configuration we can now start the network.
+
+Run `java -jar corda.jar` in the Notary, Agents and Banks node directories.
+
+You can now see the network map UI at http://localhost:8080/
 
 ## Build Tasks
 
