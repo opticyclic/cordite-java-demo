@@ -185,6 +185,27 @@ Run `java -jar corda.jar` in the Notary, Agents and Banks node directories.
 
 You can now see the network map UI at http://localhost:8080/
 
+## Certificates
+
+The only place you need an SSL (TLS now) certificate from a CA (Certificate Authority) - such as VeriSign, is for the web-app which hosts the REST API.
+
+The TLS/SSL certificate is *technically* optional if you are in a closed network, but you should probably add it anyway to avoid any man-in-the-middle attacks.
+
+On startup the NMS will create a truststore automatically.
+This means that you **DON'T** need all the `openssl` commands when using Cordite.
+See the note below about the complicated steps that you need for Corda without it.
+
+The doorman is *technically* a CA as it issues certificates whereas the network map only signs network parameters with its certificate.
+
+On startup the node does an initial-registration which is a CSR (Certificate Signing Request), and the doorman returns a certificate.
+
+This initial-registration does a `POST` to http://localhost:8080/certificate for the CSR and then a `GET` at http://localhost:8080/certificate/{id} to get the certificate.
+
+This is an automatic process with no checking. Potentially, you would want the `POST` to go to a queue for operators to manually check and process the requests.
+
+**NB:** The Corda network has specific requirements around what it thinks is secure, so you need to run `openssl` with various options and sizes etc. 
+There is a [script here](https://gitlab.com/cordite/network-map-service/-/blob/master/src/test/resources/certificates/root/generateNewRootKeyStore.sh) and a [description here](https://gitlab.com/cordite/network-map-service/-/blob/master/FAQ.md#7-how-do-i-pass-jks-files-for-nms) that shows the steps.
+
 ## Build Tasks
 
 There are two extra build tasks added - `deployNetwork` and `copyNMS`.
