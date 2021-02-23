@@ -13,6 +13,71 @@ This is published as a [docker container](https://hub.docker.com/r/cordite/netwo
 
 See also the [Cordite FAQ](https://gitlab.com/cordite/network-map-service/-/blob/master/FAQ.md#1-show-me-how-to-set-up-a-simple-network) for further details on setting up a network (both with Docker and Java).
 
+## Command Line Parameters
+
+Cordite has several command line parameters that should be set on launch.
+
+The root CA is set by default to be the Cordite Foundation:
+
+> Property Env = root-ca-name  
+> Variable = NMS_ROOT_CA_NAME  
+> Default = CN="", OU=Cordite Foundation Network, O=Cordite Foundation, L=London, ST=London, C=GB
+
+These need to be set to match your network
+- CN : CommonName
+- OU : OrganizationalUnit
+- O : Organization
+- L : Locality
+- S : StateOrProvinceName
+- C : CountryName
+
+The REST API has an admin section that should be protected properly and not use the default values:
+
+> Property Env = auth-username  
+> Variable = NMS_AUTH_USERNAME  
+> Default = sa
+
+> Property Env = auth-password  
+> Variable = NMS_AUTH_PASSWORD  
+> Default = admin
+
+How all the certificates, keys, node-infos, network-parameters etc are stored are defined by:
+
+> Property Env = storage-type  
+> Variable = NMS_STORAGE_TYPE  
+> Default = mongo
+
+The alternative is `file`, which is a lot clearer to read and is easier to backup and restore by mounting a disk in the cloud. However, the default `mongo` is an order of magnitude faster and more important for very large networks.
+
+The location of the `mongo` database or the directory for the `file` alternative are **both** specified by:
+
+> Property Env = db  
+> Variable = NMS_DB  
+> Default = .db
+
+The nodes periodically query the network map for network parameters and other nodes on the network.
+This can get quite chatty and hit the NMS hard on a large network so you can set it to a larger value e.g. 60S
+> Property Env = cache-timeout  
+> Variable = NMS_CACHE_TIMEOUT  
+> Default = 2S
+
+In order to secure the REST API you need to set TLS/SSL parameters:
+
+Whether TLS is enabled or not:
+> Property Env = tls  
+> Variable = NMS_TLS  
+> Default = false
+
+Path to TLS certificate
+> Property Env = tls-cert-path  
+> Variable = NMS_TLS_CERT_PATH  
+> Default =
+
+Path to TLS key
+> Property Env = tls-key-path  
+> Variable = NMS_TLS_KEY_PATH  
+> Default =
+
 ## Create A Network Outline
 
 Create a skeleton outline of local network ready to configure in order to connect to a local instance of cordite.
