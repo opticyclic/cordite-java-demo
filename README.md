@@ -22,16 +22,18 @@ Create a skeleton outline of local network ready to configure in order to connec
 
 See below for info about these tasks and how they are different from the usual `deployNodes`.
 
-### Run Cordite
+## Run Cordite
 
-If you don't have certificates set up then the NMS will use built-in dev keys instead.
+This will start cordite in the following way:
 
-> TODO: How many different keys do we need and where do they go?
->
-> TODO: What are the types of keys and how do we generate them?
+- Store the keys etc in a directory called "storage"
+- Create a custom name for the root certificate
+- Set the nodes to only check for updates ever 30 seconds
+
+**NOTE:** Setting the admin username/password using command line parameters (`-Dauth-username=AdminUser -Dauth-password=SuperSecretPassword`) is a security risk and they should be set using environment variables instead. For demo purposes only below, we are leaving the default values of sa/admin.
 
     cd build/nms
-    java -jar network-map-service.jar
+    java -jar -Dstorage-type=file -Ddb=storage -Droot-ca-name="CN=Custom Cordite NMS, OU=Operations, O=Demo Company, L=Dallas, ST=Texas, C=US" -Dcache-timeout=30S network-map-service.jar
 
 ### Run The Nodes
 
