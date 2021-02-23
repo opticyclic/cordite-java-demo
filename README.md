@@ -13,16 +13,14 @@ This is published as a [docker container](https://hub.docker.com/r/cordite/netwo
 
 See also the [Cordite FAQ](https://gitlab.com/cordite/network-map-service/-/blob/master/FAQ.md#1-show-me-how-to-set-up-a-simple-network) for further details on setting up a network (both with Docker and Java).
 
-## Running Locally
+## Create A Network Outline
 
-The following steps will create a local network and connect it up to a local instance of cordite.
-
-### Build The Project
+Create a skeleton outline of local network ready to configure in order to connect to a local instance of cordite.
 
     ./gradlew deployNetwork
     ./gradlew copyNMS
 
-See below for info about these extra tasks.
+See below for info about these tasks and how they are different from the usual `deployNodes`.
 
 ### Run Cordite
 
