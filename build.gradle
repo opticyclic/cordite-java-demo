@@ -106,7 +106,9 @@ task deployNodes(type: net.corda.plugins.Cordform, dependsOn: ['jar']) {
   }
   node {
     name "O=Notary,L=London,C=GB"
-    notary = [validating: false]
+    //We are setting the serviceLegalName here as it is required when running a full network
+    //For nomal dev is injected by the network bootstrapper into the network parameters
+    notary = [validating: false, serviceLegalName: "O=NotaryLegal,L=London,C=GB"]
     p2pPort 10001
     rpcSettings {
       address("localhost:10002")
