@@ -2,7 +2,16 @@
 
 Demonstrate how to deploy a CorDapp using Cordite with Java instead of Docker.
 
-The project demonstrates the concept by creating the structure in the build directory.
+The Corda samples all use a `deployNodes` task to bootstrap a local network for easy development.
+
+However, in order to run in production you need a network map service. 
+R3 provide an NMS as part of Corda Enterprise but this is too expensive for most people.
+
+The open-source alternative is to use the [Cordite NMS](https://gitlab.com/cordite/network-map-service).
+
+This is published as a [docker container](https://hub.docker.com/r/cordite/network-map) but this project will demonstrate how to deploy using Java instead of Docker.
+
+See also the [Cordite FAQ](https://gitlab.com/cordite/network-map-service/-/blob/master/FAQ.md#1-show-me-how-to-set-up-a-simple-network) for further details on setting up a network (both with Docker and Java).
 
 ## Build Tasks
 
